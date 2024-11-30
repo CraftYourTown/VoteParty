@@ -30,7 +30,11 @@ internal class HooksListenerNuVotifier(override val plugin: VotePartyPlugin) : V
 		}
 
 		// Try pulling the username from the user cache first before querying Bukkit / Mojang
-		val player = party.usersHandler[vote.username]?.player() ?: server.getOfflinePlayer(vote.username)
+		val player = party.usersHandler[vote.username]?.player() ?: server.getOfflinePlayerIfCached(vote.username)
+		if (player == null) {
+			plugin.logger.warning("A vote came through NuVotifier (username: ${vote.username}) and their offline player was not cached. Throwing away.")
+			return
+		}
 		val event = VoteReceivedEvent(player, vote.serviceName)
 		server.pluginManager.callEvent(event)
 	}
